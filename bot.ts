@@ -1,24 +1,16 @@
 import { ApplicationCommandInteraction, Client, event, Interaction, slash, User } from "./dep.ts";
 import { commands } from "./commands.ts"
+import { Logger } from "./Logger.ts";
 
 export class Bot extends Client {
 	@event()
 	ready() {
-		console.log("Ready as " + this.user?.tag);
-		this.guilds.size().then((size) => {
-			console.log("Serving " + size + " guilds");
-		});
-		commands.forEach(command => {
-			this.slash.commands.create(command)
-		})
+		Logger.info("Ready as " + this.user?.tag); // Bot is by this point ready to go
+		this.guilds.size().then((size) => Logger.info("Serving " + size + ` guild${size === 1 ? "" : "s"}`));
+		commands.forEach(command => this.slash.commands.create(command))
 	}
 
-	@slash()
-	ping(i: Interaction) {
-		i.reply("Loading...").then((msg) => {
-			msg.editResponse("Pong! " + Math.abs(Date.now() - i.timestamp.getTime()) * -1 + "ms");
-		});
-	}
+
 
 	@slash()
 	getpfp(i: ApplicationCommandInteraction) {
@@ -27,22 +19,21 @@ export class Bot extends Client {
 	}
 
 	@slash()
-	randompfp(i: Interaction) {
+	async randompfp(i: Interaction) {
 		const ran = Math.floor(Math.random() * i.guild?.memberCount!)
-		i.guild?.members.fetchList(1000).then((members) => {
-			i.reply(members[ran].user.avatarURL("png", 2048))
-		})
+		const members = await i.guild?.members.fetchList(1000)!
+
+		const member = members[ran]
+		i.reply(member.user.avatarURL("png", 2048))
 	}
 
 	@slash("uptime")
 	sendUptime(i: Interaction) {
-		const upSince = this.upSince?.getTime()!
-		const now = Date.now()
-		const diff = now - upSince
-		const seconds = Math.floor(diff / 1000)
-		const minutes = Math.floor(seconds / 60)
-		const hours = Math.floor(minutes / 60)
-		const days = Math.floor(hours / 24)
-		i.reply(`Uptime: ${days} days, ${hours % 24} hours, ${minutes % 60} minutes, ${seconds % 60} seconds`)
+		i.reply(`Uptime: ${Math.floor((Date.now() - this.upSince!.getTime()) / 1000 / 60 / 60 / 24)} days`)
+	}
+
+	@slash()
+	invite(i: Interaction) {
+		i.reply(`https://discord.com/oauth2/authorize?client_id=${this.user?.id}&scope=applications.commands%20bot&permissions=8`)
 	}
 }

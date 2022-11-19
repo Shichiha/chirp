@@ -1,4 +1,4 @@
-import { SlashCommandPartial } from "../dep.ts";
+import { SlashCommandPartial } from "../../dep.ts";
 
 
 const command: SlashCommandPartial = {
