@@ -7,7 +7,7 @@ export class Bot extends Client {
 	ready() {
 		Logger.info("Ready as " + this.user?.tag); // Bot is by this point ready to go
 		this.guilds.size().then((size) => Logger.info("Serving " + size + ` guild${size === 1 ? "" : "s"}`));
-		commands.forEach(command => this.slash.commands.create(command))
+		commands.forEach(command => {this.slash.commands.create(command); Logger.info(`Created command ${command.name}`)})
 	}
 
 
@@ -36,4 +36,22 @@ export class Bot extends Client {
 	invite(i: Interaction) {
 		i.reply(`https://discord.com/oauth2/authorize?client_id=${this.user?.id}&scope=applications.commands%20bot&permissions=8`)
 	}
+
+	@slash()
+	quack(i: Interaction) {
+		i.reply("Quack!")
+	}
+
+	@slash()
+	echo(i: ApplicationCommandInteraction) {
+		const message = i.option<string>("message")
+		i.reply(message)
+	}
+
+	@slash()
+	silentecho(i: ApplicationCommandInteraction) {
+		const message = i.option<string>("message")
+		i.channel?.send(message)
+	}
+		
 }
